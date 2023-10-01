@@ -5,8 +5,8 @@
   "scope": "/",
   "start_url": "/",
   "name": "tedison app",
-  "short_name": "your_app_name",
-  "description": "A PWA boilerplate with Next Js TypeScript",
+  "short_name": "explorers",
+  "description": "Buy locations on Starknet",
   "icons": [
     {
       "src": "/192x192.jpg",

@@ -12,8 +12,7 @@ const Index = () => {
         alignItems: "center",
       }}
     >
-      <Maps></Maps>
-      <Wallet></Wallet>
+      {/* <Maps></Maps> */}
     </div>
   );
 };

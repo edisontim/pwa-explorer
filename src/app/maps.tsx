@@ -17,7 +17,7 @@ const defaultProps = {
 };
 
 const Maps = () => {
-  const { wallet, _setWallet } = useContext(WalletContext);
+  const wallet = useContext(WalletContext);
   const { _alert, setAlert } = useContext(AlertContext);
   const [mapCenter, setMapCenter] = useState(defaultProps);
   const [pois, setPois]: any = useState([]);
@@ -91,6 +91,7 @@ const Maps = () => {
         defaultZoom={mapCenter.zoom}
         onGoogleApiLoaded={({ map, maps }) => onMapLoaded(map, maps)}
         onChange={handleChange}
+        options={{ gestureHandling: "greedy" }}
       >
         {pois.map((poi: any, index: any) => (
           <LocationMarker

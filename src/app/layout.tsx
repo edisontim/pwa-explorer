@@ -1,29 +1,24 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useContext } from "react";
 import HamburgerMenu from "./layout/hamburgerMenu";
-import TransitionAlerts from "./layout/alert";
-import { DeployDialog } from "./layout/deployDialog";
+import TransitionAlerts, { AlertArgs } from "./layout/alert";
+import { DialogContext } from "../pages/_app";
 
 export const AlertContext = React.createContext<any>(null);
-export const DialogContext = React.createContext<any>(null);
 
 const Layout = ({ children }: any) => {
-  const [alert, setAlert] = useState<any>({ severity: "", msg: "" });
-  const [dialog, setDialog] = useState<React.Component>();
-
-  useEffect(() => {}, []);
+  const [alert, setAlert] = useState<AlertArgs>({ severity: "info", msg: "" });
+  const { dialog, setDialog } = useContext(DialogContext);
 
   return (
     <AlertContext.Provider value={{ alert, setAlert }}>
-      <DialogContext.Provider value={{ dialog, setDialog }}>
-        <div>
-          <HamburgerMenu />
-          <TransitionAlerts />
-          {dialog}
-          {children}
-        </div>
-      </DialogContext.Provider>
+      <div>
+        <HamburgerMenu />
+        <TransitionAlerts />
+        {dialog}
+        {children}
+      </div>
     </AlertContext.Provider>
   );
 };

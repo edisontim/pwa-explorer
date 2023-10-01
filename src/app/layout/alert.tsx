@@ -8,11 +8,21 @@ import Collapse from "@mui/material/Collapse";
 import Button from "@mui/material/Button";
 import CloseIcon from "@mui/icons-material/Close";
 import { AlertContext } from "../layout";
+import { AlertColor } from "@mui/material/Alert";
+
+export type AlertArgs = {
+  msg: string;
+  severity: AlertColor;
+};
 
 export default function TransitionAlerts({}: any) {
-  const { alert, setAlert } = useContext(AlertContext);
+  const { alert, _ } = useContext<{
+    alert: AlertArgs;
+    _: void;
+  }>(AlertContext);
   const [open, setOpen] = useState(false);
 
+  // By default, the Alert won't be open as we set the alert's msg empty in the Layout component
   useEffect(() => {
     setOpen(Boolean(alert.msg));
   }, [alert]);
@@ -30,7 +40,7 @@ export default function TransitionAlerts({}: any) {
     >
       <Collapse in={open}>
         <Alert
-          severity={alert.severity ? alert.severity : "info"}
+          severity={alert.severity}
           action={
             <IconButton
               aria-label="close"

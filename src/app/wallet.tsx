@@ -1,4 +1,4 @@
-import { useEffect, useState, useMemo, useContext } from "react";
+"use client";
 import {
   CallData,
   ec,
@@ -7,11 +7,14 @@ import {
   Account,
   Calldata,
   TransactionStatus,
+  Contract,
+  DeployContractResponse,
+  GetTransactionReceiptResponse,
+  InvokeFunctionResponse,
 } from "starknet";
+import BigNumber from "bignumber.js";
 import { OZ_ACC_CLASS_HASH, snProvider } from "./starknet/constants";
 import secureLocalStorage from "react-secure-storage";
-import { WalletContext } from "../pages/_app";
-import { DialogContext } from "./layout";
 import { DeployDialog } from "./layout/deployDialog";
 import { getLocationContract } from "./starknet/contract";
 
@@ -33,19 +36,17 @@ function padAddress(address: string): string {
   return paddedAddress;
 }
 
-function Wallet() {
-  const { wallet, setWallet }: any = useContext(WalletContext);
-  const { _dialog, setDialog }: any = useContext(DialogContext);
-  const [deployed, setDeployed]: any = useState(false);
-  const [privKey, setPrivKey] = useState<StorageKeptKey>({
-    key: "",
-    new: true,
-    deployed: true,
-  });
-  const [reloadTrigger, setReloadTrigger] = useState(false);
+class Wallet {
+  public privKey: string;
+  public new: boolean;
+  public deployed: boolean;
+  public publicKey: string;
+  public address: string;
+  public account: Account;
+  public contract: Contract | null;
+  public setDialog: ((dialog: React.JSX.Element) => void) | null;
 
-  const fetchPrivKey = () => {
-    console.log(`Fetching privKey in the storage`);
+  private fetchPrivKey = (): StorageKeptKey => {
     let storageKeptKey: StorageKeptKey = secureLocalStorage.getItem(
       "privKey"
     ) as StorageKeptKey;
@@ -55,10 +56,10 @@ function Wallet() {
         new: true,
         deployed: false,
       };
-      setDeployed(false);
-      console.log(`Wrote a new key to storage!!`);
       secureLocalStorage.setItem("privKey", storageKeptKey);
+      console.log(`Wrote a new key to storage!!`);
     } else {
+      console.log("Fetched private key from the storage");
       if (storageKeptKey.new) {
         storageKeptKey = {
           ...storageKeptKey,
@@ -70,113 +71,103 @@ function Wallet() {
     return storageKeptKey;
   };
 
-  const publicKey = useMemo(() => {
-    if (!privKey || !privKey.key) {
-      return;
+  public init = async (setDialog: (dialog: any) => void) => {
+    const contract = await getLocationContract();
+    if (contract instanceof Error) {
+      // TODO handle error
     }
-    return ec.starkCurve.getStarkKey(privKey.key);
-  }, [privKey]);
+    this.contract = contract as Contract;
+    this.contract.connect(this.account);
 
-  const accAddress = useMemo(() => {
-    if (!publicKey) {
-      return;
+    this.setDialog = setDialog;
+    if (this.deployed == false) {
+      this.setDialog(<DeployDialog textToCopy={padAddress(this.address)} />);
     }
-    const OZaccountConstructorCallData = CallData.compile({
-      publicKey: publicKey,
-    });
-    const OZcontractAddress = hash.calculateContractAddressFromHash(
-      publicKey,
-      OZ_ACC_CLASS_HASH,
-      OZaccountConstructorCallData,
-      0
-    );
-    console.log("Precalculated account address=", OZcontractAddress);
-    return OZcontractAddress;
-  }, [publicKey]);
+  };
 
-  const account = useMemo(() => {
-    if (!accAddress || !privKey) {
-      return;
-    }
-    return new Account(snProvider, accAddress, privKey.key);
-  }, [accAddress, privKey]);
-
-  useEffect(() => {
-    setReloadTrigger(false);
-
-    if (reloadTrigger) {
-      console.log("reset the private key");
-      setPrivKey({ key: "", new: false, deployed: false });
-    }
-    setPrivKey(fetchPrivKey());
-  }, [reloadTrigger]);
-
-  useEffect(() => {
-    const setLocationContract = async () => {
-      const contract = await getLocationContract();
-      contract?.connect(account as Account);
-      setWallet({
-        ...wallet,
-        execute,
-        account,
-        contract,
-        new: privKey.new,
-        deployed: privKey.deployed,
-      });
-      setDeployed(privKey.deployed);
-      if (privKey.deployed == false) {
-        setDialog(<DeployDialog textToCopy={padAddress(account?.address)} />);
-      }
-    };
-    if (account) setLocationContract();
-  }, [account]);
-
-  useEffect(() => {
-    if (!deployed && wallet && wallet.deployed) {
-      setDeployed(true);
-      secureLocalStorage.setItem("privKey", {
-        key: wallet.account.signer.pk,
-        new: false,
-        deployed: true,
-      });
-    }
-  }, [wallet]);
-
-  const execute = async (argWallet: any, params: ExecuteFunctionParams) => {
-    console.log(argWallet);
-    let ret: any;
-    const address = padAddress(account.address);
-    if (!argWallet.deployed) {
-      try {
-        ret = await account?.deployAccount({
+  private deployAccount = async (): Promise<string | undefined> => {
+    let ret: string | undefined = undefined;
+    try {
+      const deployRet: DeployContractResponse =
+        await this.account.deployAccount({
           classHash: OZ_ACC_CLASS_HASH,
           constructorCalldata: CallData.compile({
-            publicKey: publicKey as string,
+            publicKey: this.publicKey,
           }),
-          addressSalt: publicKey,
+          addressSalt: this.publicKey,
         });
-        ret = await snProvider.waitForTransaction(ret.transaction_hash);
-        if (
-          ret.status === TransactionStatus.REJECTED ||
-          ret.status === TransactionStatus.REVERTED
-        ) {
-          setDialog(<DeployDialog textToCopy={address} />);
-        } else {
-          console.log("Successfully deployed ?");
-          console.log(argWallet);
-          setWallet({ ...argWallet, deployed: true });
-          setDeployed(true);
-        }
-      } catch (error) {
-        ret = error;
-        setDialog(<DeployDialog textToCopy={address} />);
+      const txRet: GetTransactionReceiptResponse =
+        await snProvider.waitForTransaction(
+          deployRet.transaction_hash as string
+        );
+      if (
+        txRet.status === TransactionStatus.REJECTED ||
+        txRet.status === TransactionStatus.REVERTED
+      ) {
+        this.setDialog?.(
+          <DeployDialog textToCopy={padAddress(this.address)} />
+        );
+      } else {
+        ret = txRet.transaction_hash;
       }
-    } else {
-      ret = await account?.execute(params);
+    } catch (error) {
+      this.setDialog?.(<DeployDialog textToCopy={padAddress(this.address)} />);
+      throw error;
     }
     return ret;
   };
 
-  return <></>;
+  public getOwnerOfLocation = async (locationHash: string): Promise<string> => {
+    let hash = await this.contract?.owner_of(locationHash);
+    console.log(`response from owner_of ${hash}`);
+    if (hash === 0n) {
+      hash = "0x0";
+    } else {
+      hash = "0x" + new BigNumber(hash).toString(16);
+      hash = hash.slice(0, 5) + "..." + hash.slice(62);
+    }
+    return hash;
+  };
+
+  public execute = async (
+    argWallet: Wallet,
+    params: ExecuteFunctionParams
+  ): Promise<InvokeFunctionResponse | Error> => {
+    if (argWallet === null) {
+      return Error("Wallet is null");
+    }
+    let ret: InvokeFunctionResponse;
+    if (!argWallet.deployed) {
+      await this.deployAccount();
+      this.deployed = true;
+    }
+    ret = await argWallet.account.execute(params);
+    return ret;
+  };
+
+  constructor() {
+    ({
+      key: this.privKey,
+      deployed: this.deployed,
+      new: this.new,
+    } = this.fetchPrivKey());
+
+    this.publicKey = ec.starkCurve.getStarkKey(this.privKey);
+    const OZaccountConstructorCallData = CallData.compile({
+      publicKey: this.publicKey,
+    });
+    this.address = hash.calculateContractAddressFromHash(
+      this.publicKey,
+      OZ_ACC_CLASS_HASH,
+      OZaccountConstructorCallData,
+      0
+    );
+    console.log("Precalculated account address=", this.address);
+    this.account = new Account(snProvider, this.address, this.privKey);
+    // These variables will be initialized in the init function
+    this.contract = null;
+    this.setDialog = null;
+  }
 }
+
 export default Wallet;
