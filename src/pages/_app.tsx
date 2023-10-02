@@ -1,16 +1,21 @@
+"use client";
 import React, { useState, useEffect } from "react";
 import Head from "next/head";
 import { WebWalletConnector } from "@argent/starknet-react-webwallet-connector";
 import { StarknetConfig } from "@starknet-react/core";
 import Layout from "@/app/layout";
 import Wallet from "../app/wallet";
+import { AlertArgs } from "../app/layout/alert";
 
 export const WalletContext = React.createContext<any>(null);
 export const DialogContext = React.createContext<any>(null);
+export const AlertContext = React.createContext<any>(null);
 
 function App({ Component, pageProps }: any) {
+  const [alert, setAlert] = useState<AlertArgs>({ severity: "info", msg: "" });
   const [dialog, setDialog] = useState<React.Component>();
-  const [wallet, setWallet] = useState<Wallet | null>(null);
+  const [wallet, setWallet] = useState<Wallet>(new Wallet(setAlert));
+
   const connectors = [
     new WebWalletConnector({ url: "https://web.hydrogen.argent47.net" }),
   ];
@@ -25,10 +30,16 @@ function App({ Component, pageProps }: any) {
     }
     // Once the window has initialized
     if (typeof window !== "undefined") {
-      const newWallet = new Wallet();
-      newWallet.connect().then(() => setWallet(newWallet));
+      // Do stuff
     }
   }, []);
+
+  useEffect(() => {
+    // Once the window has initialized
+    if (typeof window !== "undefined") {
+      console.log(wallet);
+    }
+  }, [wallet]);
 
   return (
     <>
@@ -39,13 +50,15 @@ function App({ Component, pageProps }: any) {
         />
       </Head>
       <StarknetConfig autoConnect connectors={connectors}>
-        <DialogContext.Provider value={{ dialog, setDialog }}>
-          <WalletContext.Provider value={{ wallet, setWallet }}>
-            <Layout>
-              <Component {...pageProps} />
-            </Layout>
-          </WalletContext.Provider>
-        </DialogContext.Provider>
+        <AlertContext.Provider value={{ alert, setAlert }}>
+          <DialogContext.Provider value={{ dialog, setDialog }}>
+            <WalletContext.Provider value={{ wallet, setWallet }}>
+              <Layout>
+                <Component {...pageProps} />
+              </Layout>
+            </WalletContext.Provider>
+          </DialogContext.Provider>
+        </AlertContext.Provider>
       </StarknetConfig>
     </>
   );

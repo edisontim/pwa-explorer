@@ -2,8 +2,7 @@
 import React, { useEffect, useState, useContext } from "react";
 import GoogleMapReact from "google-map-react";
 import { UserPosMarker } from "./markers/userPosMarker";
-import { WalletContext } from "../pages/_app";
-import { AlertContext } from "../app/layout";
+import { WalletContext, AlertContext } from "../pages/_app";
 import { LocationMarker } from "./markers/locationMarker";
 
 const { extractWithQuery } = require("osm-extractor");
@@ -91,7 +90,7 @@ const Maps = () => {
         defaultZoom={mapCenter.zoom}
         onGoogleApiLoaded={({ map, maps }) => onMapLoaded(map, maps)}
         onChange={handleChange}
-        options={{ gestureHandling: "greedy" }}
+        options={{ gestureHandling: "greedy", clickableIcons: false }}
       >
         {pois.map((poi: any, index: any) => (
           <LocationMarker
@@ -99,7 +98,6 @@ const Maps = () => {
             text={poi.title}
             lat={poi.lat}
             lng={poi.lng}
-            wallet={wallet}
             setAlert={setAlert}
           />
         ))}
