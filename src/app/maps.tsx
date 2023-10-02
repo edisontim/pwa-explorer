@@ -17,7 +17,7 @@ const defaultProps = {
 };
 
 const Maps = () => {
-  const wallet = useContext(WalletContext);
+  const { wallet, _setWallet } = useContext(WalletContext);
   const { _alert, setAlert } = useContext(AlertContext);
   const [mapCenter, setMapCenter] = useState(defaultProps);
   const [pois, setPois]: any = useState([]);
