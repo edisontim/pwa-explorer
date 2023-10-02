@@ -9,14 +9,14 @@
   "description": "Buy locations on Starknet",
   "icons": [
     {
-      "src": "/192x192.jpg",
+      "src": "/192x192.jpeg",
       "sizes": "192x192",
-      "type": "image/jpg"
+      "type": "image/jpeg"
     },
     {
-      "src": "/512x512.png",
+      "src": "/512x512.jpeg",
       "sizes": "512x512",
-      "type": "image/png"
+      "type": "image/jpeg"
     }
   ]
 }
