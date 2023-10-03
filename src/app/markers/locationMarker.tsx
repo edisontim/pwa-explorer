@@ -69,6 +69,7 @@ export const LocationMarker = ({
   const handleMarkerClick = async (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
+    console.log(`${lat} ${lng}`);
     const locationHash = getHashFromCoords(lat, lng);
     setAnchorEl(event.currentTarget);
     let hash = "0x0";

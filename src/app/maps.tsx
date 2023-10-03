@@ -15,6 +15,29 @@ const defaultProps = {
   zoom: 14,
 };
 
+// https://henry-rossiter.medium.com/calculating-distance-between-geographic-coordinates-with-javascript-5f3097b61898
+function cosineDistanceBetweenPoints(
+  lat1: number,
+  lon1: number,
+  lat2: number,
+  lon2: number
+): number {
+  const R = 6371e3;
+  const p1 = (lat1 * Math.PI) / 180;
+  const p2 = (lat2 * Math.PI) / 180;
+  const deltaP = p2 - p1;
+  const deltaLon = lon2 - lon1;
+  const deltaLambda = (deltaLon * Math.PI) / 180;
+  const a =
+    Math.sin(deltaP / 2) * Math.sin(deltaP / 2) +
+    Math.cos(p1) *
+      Math.cos(p2) *
+      Math.sin(deltaLambda / 2) *
+      Math.sin(deltaLambda / 2);
+  const d = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a)) * R;
+  return d;
+}
+
 const Maps = () => {
   const { wallet, _setWallet } = useContext(WalletContext);
   const { _alert, setAlert } = useContext(AlertContext);
@@ -30,6 +53,34 @@ const Maps = () => {
       navigator.geolocation.getCurrentPosition(
         ({ coords }) => {
           const { latitude, longitude } = coords;
+          setMapCenter({
+            ...mapCenter,
+            center: { lat: latitude, lng: longitude },
+          });
+          setUserPos({ lat: latitude, lng: longitude });
+        },
+        (err) => {
+          console.log(err);
+        },
+        {
+          enableHighAccuracy: true,
+          timeout: 10000000,
+          maximumAge: 10000,
+        }
+      );
+      navigator.geolocation.watchPosition(
+        ({ coords, timestamp }) => {
+          console.log(timestamp);
+          console.log(
+            `user changed position, in the watch position ${JSON.stringify(
+              coords,
+              null,
+              2
+            )}`
+          );
+          const { latitude, longitude } = coords;
+          console.log(`${latitude} ${longitude}`);
+          // If we want the camera to focus only on the user, uncomment this and don't allow drag/zoom/dezoom
           setMapCenter({
             ...mapCenter,
             center: { lat: latitude, lng: longitude },
@@ -93,6 +144,7 @@ const Maps = () => {
         options={{ gestureHandling: "greedy", clickableIcons: false }}
       >
         {pois.map((poi: any, index: any) => (
+          // if ()
           <LocationMarker
             key={index}
             text={poi.title}

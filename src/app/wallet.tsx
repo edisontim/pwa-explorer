@@ -1,4 +1,3 @@
-"use client";
 import { StarknetWindowObject } from "@argent/get-starknet";
 import { ERC721_LOCATION_ADDRESS, snProvider } from "./starknet/constants";
 import { CallData, Contract, cairo } from "starknet";
