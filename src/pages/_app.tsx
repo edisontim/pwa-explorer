@@ -3,9 +3,19 @@ import React, { useState, useEffect } from "react";
 import Head from "next/head";
 import { WebWalletConnector } from "@argent/starknet-react-webwallet-connector";
 import { StarknetConfig } from "@starknet-react/core";
-import Layout from "@/app/layout";
+import Layout from "../app/layout";
 import Wallet from "../app/wallet";
 import { AlertArgs } from "../app/layout/alert";
+import isMobile, { isMobileResult } from "ismobilejs";
+import { PcDialog } from "../app/layout/pcDialog";
+import * as Bowser from "bowser";
+import {
+  IosInstallDialog,
+  IosChangeBrowserDialog,
+} from "@/app/layout/iosDialogs";
+import { AndroidInstallDialog } from "@/app/layout/androidDialogs";
+
+import "../app/app.css";
 
 export const WalletContext = React.createContext<any>(null);
 export const DialogContext = React.createContext<any>(null);
@@ -13,12 +23,46 @@ export const AlertContext = React.createContext<any>(null);
 
 function App({ Component, pageProps }: any) {
   const [alert, setAlert] = useState<AlertArgs>({ severity: "info", msg: "" });
-  const [dialog, setDialog] = useState<React.Component>();
+  const [dialog, setDialog] = useState<any>();
   const [wallet, setWallet] = useState<Wallet>(new Wallet(setAlert));
+  useState<Boolean>(false);
 
   const connectors = [
     new WebWalletConnector({ url: "https://web.hydrogen.argent47.net" }),
   ];
+
+  const pcSetup = () => {
+    setDialog(<PcDialog />);
+  };
+
+  const phoneTabletSetup = (isMobileResult: isMobileResult) => {
+    // If we're already on the installed app, do nothing
+    if (
+      ("standalone" in window.navigator && window.navigator.standalone) ||
+      window.matchMedia("diplay-mode: standalone").matches
+    ) {
+      return;
+    }
+    // iOS
+    if (isMobileResult.apple.device) {
+      const browser = Bowser.getParser(window.navigator.userAgent);
+      if (browser.getBrowserName() === "Safari") {
+        setDialog(<IosInstallDialog />);
+      } else {
+        setDialog(<IosChangeBrowserDialog />);
+      }
+    }
+    // Android is handled by the beforeinstallprompt event
+  };
+
+  const setup = () => {
+    const isMobileResult: isMobileResult = isMobile(window.navigator.userAgent);
+    if (!(isMobileResult.phone || isMobileResult.tablet)) {
+      pcSetup();
+    } else {
+      phoneTabletSetup(isMobileResult);
+    }
+  };
 
   useEffect(() => {
     if (!navigator.serviceWorker.controller) {
@@ -30,16 +74,15 @@ function App({ Component, pageProps }: any) {
     }
     // Once the window has initialized
     if (typeof window !== "undefined") {
-      // Do stuff
+      window.addEventListener("beforeinstallprompt", (event) => {
+        event.preventDefault();
+        setDialog(
+          <AndroidInstallDialog deferredPrompt={event} setDialog={setDialog} />
+        );
+      });
+      setup();
     }
   }, []);
-
-  useEffect(() => {
-    // Once the window has initialized
-    if (typeof window !== "undefined") {
-      console.log(wallet);
-    }
-  }, [wallet]);
 
   return (
     <>

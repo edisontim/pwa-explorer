@@ -1,4 +1,7 @@
-import { getHashFromCoords } from "../../src/app/markers/geoPosUtils";
+import {
+  getHashFromCoords,
+  cosineDistanceBetweenPoints,
+} from "../../src/app/markers/geoPosUtils";
 
 before(() => {});
 
@@ -12,4 +15,8 @@ describe("geoPosUtils", () => {
       "0x2b85f5d104f6c4abcd464c5fad76b6f9d5ca7fd70c3ac819232f542bccc0b52"
     );
   });
+  it("cosineDistanceBetweenPoints"),
+    () => {
+      expect(cosineDistanceBetweenPoints(0.0, 0.0, 20.0, 0.0)).to.be.equal(20);
+    };
 });

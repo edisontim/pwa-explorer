@@ -1,22 +1,24 @@
 "use client";
 
-import React from "react";
-import { useRouter } from "next/navigation";
+import React, { useContext } from "react";
 import { Menu, MenuItem } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import { WalletContext } from "../../pages/_app";
 
 const HamburgerMenu = () => {
-  const router = useRouter();
+  const { wallet, useWallet } = useContext(WalletContext);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const handleClick = (event: any) => {
     setAnchorEl(event.currentTarget);
   };
-  const handleClose = (e: any, target: any) => {
+
+  const handleClose = (e: any, buttonClicked: string) => {
     setAnchorEl(null);
-    if (target !== "backdropClick") {
-      router.push(target);
+    console.log("hey");
+    if (!wallet.connection && buttonClicked === "wallet") {
+      e.preventDefault();
+      wallet.connect(() => {});
     }
   };
 
@@ -41,16 +43,23 @@ const HamburgerMenu = () => {
       <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
         <MenuItem
           style={{ fontSize: 35, textAlign: "center" }}
-          onClick={(e) => handleClose(e, "/wallet")}
+          onClick={(e) => handleClose(e, "wallet")}
         >
-          💳
+          <a style={{ textDecoration: "none" }} href="/wallet" target="_blank">
+            💳
+          </a>
         </MenuItem>
-        <MenuItem
+        {/* <MenuItem
           style={{ fontSize: 40, width: "60px", textAlign: "center" }}
-          onClick={(e) => handleClose(e, "/settings")}
+          onClick={(e) => handleClose(e, "settings")}
         >
-          ⚙
-        </MenuItem>
+          <a
+            style={{ textDecoration: "none", color: "inherit" }}
+            href="/settings"
+          >
+            ⚙
+          </a>
+        </MenuItem> */}
       </Menu>
     </div>
   );

@@ -4,19 +4,24 @@
   "display": "standalone",
   "scope": "/",
   "start_url": "/",
-  "name": "tedison app",
-  "short_name": "explorers",
+  "name": "Explorers app - Starknet real places",
+  "short_name": "Explorers",
   "description": "Buy locations on Starknet",
   "icons": [
     {
-      "src": "/192x192.jpeg",
-      "sizes": "192x192",
-      "type": "image/jpeg"
+      "src": "/144x144.png",
+      "sizes": "144x144",
+      "type": "image/png"
     },
     {
-      "src": "/512x512.jpeg",
+      "src": "/192x192.png",
+      "sizes": "192x192",
+      "type": "image/png"
+    },
+    {
+      "src": "/512x512.png",
       "sizes": "512x512",
-      "type": "image/jpeg"
+      "type": "image/png"
     }
   ]
 }

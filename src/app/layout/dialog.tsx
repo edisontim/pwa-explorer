@@ -6,14 +6,23 @@ import DialogContent from "@mui/material/DialogContent";
 import DialogContentText from "@mui/material/DialogContentText";
 import DialogTitle from "@mui/material/DialogTitle";
 
-export default function AlertDialog({ title, text, extraButtons }: any) {
+export default function AlertDialog({
+  title,
+  text,
+  extraButtons,
+  icons = [],
+  unclosable = false,
+}: any) {
   const [open, setOpen] = React.useState(true);
 
   const handleClickOpen = () => {
     setOpen(true);
   };
 
-  const handleClose = () => {
+  const handleClose = (event: any) => {
+    if (unclosable) {
+      return;
+    }
     setOpen(false);
   };
 
@@ -25,15 +34,18 @@ export default function AlertDialog({ title, text, extraButtons }: any) {
         aria-labelledby="alert-dialog-title"
         aria-describedby="alert-dialog-description"
       >
-        <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
+        {Boolean(title) && (
+          <DialogTitle id="alert-dialog-title">{title}</DialogTitle>
+        )}
         <DialogContent>
+          {icons}
           <DialogContentText id="alert-dialog-description">
             {text}
           </DialogContentText>
         </DialogContent>
         <DialogActions>
           {extraButtons}
-          <Button onClick={handleClose}>Close</Button>
+          {!unclosable && <Button onClick={handleClose}>Close</Button>}
         </DialogActions>
       </Dialog>
     </div>

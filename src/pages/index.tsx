@@ -7,6 +7,7 @@ const Index = () => {
         width: "100vw",
         height: "100vh",
         display: "flex",
+        overflow: "hidden",
         justifyContent: "center",
         alignItems: "center",
       }}

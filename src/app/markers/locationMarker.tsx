@@ -1,16 +1,17 @@
-import { useContext, useEffect, useState } from "react";
+import { useContext, useState } from "react";
 import { Button, Menu, Collapse } from "@mui/material";
 import { Marker } from "./marker";
 import { snProvider } from "../starknet/constants";
 import { AlertArgs } from "../layout/alert";
-import { getHashFromCoords } from "./geoPosUtils";
-import { WalletContext } from "@/pages/_app";
+import { getHashFromCoords, cosineDistanceBetweenPoints } from "./geoPosUtils";
+import { WalletContext } from "../../pages/_app";
+import { Position } from "../maps";
 import BigNumber from "bignumber.js";
-import { hash } from "starknet";
 
 type locationMarkerProps = {
   lat: number;
   lng: number;
+  userPos: Position;
   text: string;
   setAlert: (alert: AlertArgs) => void;
 };
@@ -18,18 +19,15 @@ type locationMarkerProps = {
 export const LocationMarker = ({
   lat,
   lng,
+  userPos,
   text,
   setAlert,
 }: locationMarkerProps) => {
-  const { wallet, setWallet } = useContext(WalletContext);
-  const [state, updateState] = useState({});
+  const { wallet, _setWallet } = useContext(WalletContext);
+  const [_state, updateState] = useState({});
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [owner, setOwner]: any = useState();
   const open = Boolean(anchorEl);
-
-  useEffect(() => {
-    console.log("state has changed");
-  }, [state]);
 
   const setNewOwner = (newOwner: BigInt) => {
     let hashedOwner: string;
@@ -69,7 +67,6 @@ export const LocationMarker = ({
   const handleMarkerClick = async (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
-    console.log(`${lat} ${lng}`);
     const locationHash = getHashFromCoords(lat, lng);
     setAnchorEl(event.currentTarget);
     let hash = "0x0";
@@ -82,7 +79,6 @@ export const LocationMarker = ({
           severity: "warning",
         });
       }
-      console.log(`Setting owner to: ${hash}`);
       setNewOwner(hash);
     }
   };
@@ -93,6 +89,29 @@ export const LocationMarker = ({
 
   const handleConnectButtonClick = async () => {
     await wallet.connect(updateState);
+  };
+
+  const getButton = (): any => {
+    if (!(wallet.connection && wallet.connection?.isConnected)) {
+      return <Button onClick={handleConnectButtonClick}>Connect wallet</Button>;
+    }
+    const distanceToButton = cosineDistanceBetweenPoints(
+      userPos.lat,
+      userPos.lng,
+      lat,
+      lng
+    );
+    if (owner === "0x0" && distanceToButton > 20) {
+      return (
+        <Button disabled={true} onClick={handleMintIt}>
+          Get closer to mint
+        </Button>
+      );
+    }
+    if (owner === "0x0") {
+      return <Button onClick={handleMintIt}>Mint it!</Button>;
+    }
+    return "";
   };
 
   return (
@@ -109,13 +128,7 @@ export const LocationMarker = ({
           >
             <p style={{ padding: 10 }}>Name: {text}</p>
             <p style={{ padding: 10 }}>Owner: {owner}</p>
-            {!(wallet.connection && wallet.connection?.isConnected) ? (
-              <Button onClick={handleConnectButtonClick}>Connect wallet</Button>
-            ) : owner === "0x0" ? (
-              <Button onClick={handleMintIt}>Mint it!</Button>
-            ) : (
-              ""
-            )}
+            {getButton()}
           </div>
         </Menu>
       </Collapse>

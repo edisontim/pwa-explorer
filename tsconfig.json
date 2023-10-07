@@ -45,7 +45,7 @@
     "**/*.tsx",
     ".next/types/**/*.ts",
     "public/service-worker.js"
-  ],
+, "src/app/markers/userPosMarker.tsx"  ],
   "exclude": [
     "node_modules"
   ]
