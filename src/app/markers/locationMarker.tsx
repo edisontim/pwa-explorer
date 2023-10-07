@@ -3,7 +3,7 @@ import { Button, Menu, Collapse } from "@mui/material";
 import { Marker } from "./marker";
 import { snProvider } from "../starknet/constants";
 import { AlertArgs } from "../layout/alert";
-import { getHashFromCoords, cosineDistanceBetweenPoints } from "./geoPosUtils";
+import { getHashFromCoords, cosineDistanceBetweenPoints } from "../geoPosUtils";
 import { WalletContext } from "../../pages/_app";
 import { Position } from "../maps";
 import BigNumber from "bignumber.js";

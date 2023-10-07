@@ -4,6 +4,7 @@ import GoogleMapReact, { MapOptions } from "google-map-react";
 import { UserPosMarker } from "./markers/userPosMarker";
 import { AlertContext } from "../pages/_app";
 import { LocationMarker } from "./markers/locationMarker";
+import { cosineDistanceBetweenPoints } from "./geoPosUtils";
 
 const { extractWithQuery } = require("osm-extractor");
 
@@ -31,10 +32,6 @@ const Maps = () => {
   const { _alert, setAlert } = useContext(AlertContext);
   const [mapCenter, setMapCenter] = useState(defaultProps);
   const [pois, setPois]: any = useState([]);
-  const [userPos, setUserPos] = useState<Position>({
-    lat: defaultProps.center.lat,
-    lng: defaultProps.center.lng,
-  });
 
   useEffect(() => {}, []);
 
@@ -48,7 +45,6 @@ const Maps = () => {
             ...mapCenter,
             center: { lat: latitude, lng: longitude },
           });
-          setUserPos({ lat: latitude, lng: longitude });
         },
         (err) => {
           console.log(err);
@@ -62,12 +58,19 @@ const Maps = () => {
       navigator.geolocation.watchPosition(
         ({ coords, timestamp }) => {
           const { latitude, longitude } = coords;
-          // If we want the camera to focus only on the user, uncomment this and don't allow drag/zoom/dezoom
-          setMapCenter({
-            ...mapCenter,
-            center: { lat: latitude, lng: longitude },
-          });
-          setUserPos({ lat: latitude, lng: longitude });
+          if (
+            cosineDistanceBetweenPoints(
+              mapCenter.center.lat,
+              mapCenter.center.lng,
+              latitude,
+              longitude
+            ) > 20
+          ) {
+            setMapCenter({
+              ...mapCenter,
+              center: { lat: latitude, lng: longitude },
+            });
+          }
         },
         (err) => {
           console.log(err);
@@ -127,7 +130,7 @@ const Maps = () => {
       >
         {pois.map((poi: any, index: any) => (
           <LocationMarker
-            userPos={userPos}
+            userPos={mapCenter.center}
             key={index}
             text={poi.title}
             lat={poi.lat}
@@ -135,7 +138,10 @@ const Maps = () => {
             setAlert={setAlert}
           />
         ))}
-        <UserPosMarker lat={userPos.lat} lng={userPos.lng}></UserPosMarker>
+        <UserPosMarker
+          lat={mapCenter.center.lat}
+          lng={mapCenter.center.lng}
+        ></UserPosMarker>
       </GoogleMapReact>
     </div>
   );

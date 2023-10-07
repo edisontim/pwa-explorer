@@ -1,7 +1,7 @@
 import {
   getHashFromCoords,
   cosineDistanceBetweenPoints,
-} from "../../src/app/markers/geoPosUtils";
+} from "../../src/app/geoPosUtils";
 
 before(() => {});
 
