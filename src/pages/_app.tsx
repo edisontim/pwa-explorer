@@ -69,8 +69,6 @@ function App({ Component, pageProps }: any) {
   useEffect(() => {
     const connectToPreviouslyEstablishedAccount = async () => {
       const connection = await connect({
-        include: ["argentWebWallet"],
-        modalWalletAppearance: "email_only",
         webWalletUrl: ARGENT_WEB_WALLET_URL,
         modalMode: "neverAsk",
       });
