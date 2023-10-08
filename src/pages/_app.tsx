@@ -25,7 +25,6 @@ function App({ Component, pageProps }: any) {
   const [alert, setAlert] = useState<AlertArgs>({ severity: "info", msg: "" });
   const [dialog, setDialog] = useState<any>();
   const [wallet, setWallet] = useState<Wallet>(new Wallet(setAlert));
-  useState<Boolean>(false);
 
   const connectors = [
     new WebWalletConnector({ url: "https://web.hydrogen.argent47.net" }),

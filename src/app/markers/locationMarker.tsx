@@ -1,5 +1,5 @@
 import { useContext, useState } from "react";
-import { Button, Menu, Collapse } from "@mui/material";
+import { Button, Menu, Collapse, Typography } from "@mui/material";
 import { Marker } from "./marker";
 import { snProvider } from "../starknet/constants";
 import { AlertArgs } from "../layout/alert";
@@ -126,8 +126,12 @@ export const LocationMarker = ({
               alignItems: "center",
             }}
           >
-            <p style={{ padding: 10 }}>Name: {text}</p>
-            <p style={{ padding: 10 }}>Owner: {owner}</p>
+            <Typography variant="h5" style={{ padding: 10 }}>
+              {text}
+            </Typography>
+            <Typography variant="body1" style={{ padding: 10 }}>
+              Owner: {owner}
+            </Typography>
             {getButton()}
           </div>
         </Menu>

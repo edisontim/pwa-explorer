@@ -6,8 +6,7 @@
     "dev": "next dev",
     "build": "next build",
     "start": "next start",
-    "lint": "next lint",
-    "tests": "npx cypress run --component --spec 'cypress/integration'"
+    "lint": "next lint"
   },
   "dependencies": {
     "@argent/get-starknet": "^6.4.7",
