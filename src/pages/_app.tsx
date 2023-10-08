@@ -1,8 +1,6 @@
 "use client";
 import React, { useState, useEffect } from "react";
 import Head from "next/head";
-import { WebWalletConnector } from "@argent/starknet-react-webwallet-connector";
-import { StarknetConfig } from "@starknet-react/core";
 import Layout from "../app/layout";
 import Wallet from "../app/wallet";
 import { AlertArgs } from "../app/layout/alert";
@@ -27,8 +25,6 @@ function App({ Component, pageProps }: any) {
   const [alert, setAlert] = useState<AlertArgs>({ severity: "info", msg: "" });
   const [dialog, setDialog] = useState<any>();
   const [wallet, setWallet] = useState<Wallet>(new Wallet(setAlert));
-
-  const connectors = [new WebWalletConnector({ url: ARGENT_WEB_WALLET_URL })];
 
   const pcSetup = () => {
     setDialog(<PcDialog />);
@@ -105,17 +101,15 @@ function App({ Component, pageProps }: any) {
           content="minimum-scale=1, initial-scale=1, width=device-width, shrink-to-fit=no, user-scalable=no, viewport-fit=cover"
         />
       </Head>
-      <StarknetConfig autoConnect connectors={connectors}>
-        <AlertContext.Provider value={{ alert, setAlert }}>
-          <DialogContext.Provider value={{ dialog, setDialog }}>
-            <WalletContext.Provider value={{ wallet, setWallet }}>
-              <Layout>
-                <Component {...pageProps} />
-              </Layout>
-            </WalletContext.Provider>
-          </DialogContext.Provider>
-        </AlertContext.Provider>
-      </StarknetConfig>
+      <AlertContext.Provider value={{ alert, setAlert }}>
+        <DialogContext.Provider value={{ dialog, setDialog }}>
+          <WalletContext.Provider value={{ wallet, setWallet }}>
+            <Layout>
+              <Component {...pageProps} />
+            </Layout>
+          </WalletContext.Provider>
+        </DialogContext.Provider>
+      </AlertContext.Provider>
     </>
   );
 }

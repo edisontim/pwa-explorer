@@ -126,10 +126,16 @@ export const LocationMarker = ({
               alignItems: "center",
             }}
           >
-            <Typography variant="h5" style={{ padding: 10 }}>
+            <Typography
+              variant="h5"
+              style={{ textAlign: "center", padding: 10 }}
+            >
               {text}
             </Typography>
-            <Typography variant="body1" style={{ padding: 10 }}>
+            <Typography
+              variant="body1"
+              style={{ textAlign: "center", padding: 10 }}
+            >
               Owner: {owner}
             </Typography>
             {getButton()}
