@@ -4,6 +4,7 @@ import { CallData, Contract, cairo } from "starknet";
 import { AlertArgs } from "./layout/alert";
 import erc721 from "./contract/erc721.json";
 import { connect } from "@argent/get-starknet";
+import { ARGENT_WEB_WALLET_URL } from "./starknet/constants";
 
 export default class Wallet {
   public connection: StarknetWindowObject | null;
@@ -16,15 +17,19 @@ export default class Wallet {
     this.contract = new Contract(erc721, ERC721_LOCATION_ADDRESS, snProvider);
   }
 
-  public connect(updateState: any) {
-    connect({
+  public passEstablishedConnection = (connection: StarknetWindowObject) => {
+    this.connection = connection;
+  };
+
+  public async connect(updateState: any) {
+    const connection = await connect({
       include: ["argentWebWallet"],
       modalWalletAppearance: "email_only",
-      webWalletUrl: "https://web.hydrogen.argent47.net",
-    }).then((connection) => {
-      this.connection = connection;
-      updateState({});
+      webWalletUrl: ARGENT_WEB_WALLET_URL,
+      modalMode: "canAsk",
     });
+    this.connection = connection;
+    updateState({});
   }
 
   public getOwnerOfLocation = async (locationHash: string): Promise<BigInt> => {

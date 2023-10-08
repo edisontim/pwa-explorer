@@ -34,8 +34,7 @@ export const LocationMarker = ({
     if (newOwner === BigInt(0)) {
       hashedOwner = "0x0";
     } else {
-      hashedOwner =
-        "0x" + new BigNumber(newOwner.toLocaleString()).toString(16);
+      hashedOwner = "0x" + new BigNumber(String(newOwner)).toString(16);
       hashedOwner = hashedOwner.slice(0, 5) + "..." + hashedOwner.slice(62);
     }
     setOwner(hashedOwner);
@@ -70,18 +69,16 @@ export const LocationMarker = ({
   ) => {
     const locationHash = getHashFromCoords(lat, lng);
     setAnchorEl(event.currentTarget);
-    let hash;
     if (!owner) {
       try {
-        hash = await wallet.getOwnerOfLocation(locationHash);
+        const hash: BigInt = await wallet.getOwnerOfLocation(locationHash);
+        setNewOwner(hash);
       } catch (error) {
-        hash = "0x0";
         setAlert({
           msg: `Unexpected error happened ${error}`,
           severity: "warning",
         });
       }
-      setNewOwner(hash);
     }
   };
 
@@ -89,21 +86,22 @@ export const LocationMarker = ({
     setAnchorEl(null);
   };
 
-  const handleConnectButtonClick = async () => {
-    await wallet.connect(updateState);
-  };
-
   const getButton = (): any => {
     if (!(wallet.connection && wallet.connection?.isConnected)) {
-      return <Button onClick={handleConnectButtonClick}>Connect wallet</Button>;
+      return (
+        <Button
+          onClick={async () => {
+            await wallet.connect(updateState);
+          }}
+        >
+          Connect wallet
+        </Button>
+      );
     }
-    const distanceToButton = cosineDistanceBetweenPoints(
-      userPos.lat,
-      userPos.lng,
-      lat,
-      lng
-    );
-    if (owner === "0x0" && distanceToButton > 20) {
+    if (
+      owner === "0x0" &&
+      cosineDistanceBetweenPoints(userPos.lat, userPos.lng, lat, lng) > 20
+    ) {
       return (
         <Button disabled={true} onClick={handleMintIt}>
           Get closer to mint

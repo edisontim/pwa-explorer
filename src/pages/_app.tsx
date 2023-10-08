@@ -14,6 +14,8 @@ import {
   IosChangeBrowserDialog,
 } from "@/app/layout/iosDialogs";
 import { AndroidInstallDialog } from "@/app/layout/androidDialogs";
+import { ARGENT_WEB_WALLET_URL } from "@/app/starknet/constants";
+import { connect } from "@argent/get-starknet";
 
 import "../app/app.css";
 
@@ -26,9 +28,7 @@ function App({ Component, pageProps }: any) {
   const [dialog, setDialog] = useState<any>();
   const [wallet, setWallet] = useState<Wallet>(new Wallet(setAlert));
 
-  const connectors = [
-    new WebWalletConnector({ url: "https://web.hydrogen.argent47.net" }),
-  ];
+  const connectors = [new WebWalletConnector({ url: ARGENT_WEB_WALLET_URL })];
 
   const pcSetup = () => {
     setDialog(<PcDialog />);
@@ -55,6 +55,9 @@ function App({ Component, pageProps }: any) {
   };
 
   const setup = () => {
+    if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
+      return;
+    }
     const isMobileResult: isMobileResult = isMobile(window.navigator.userAgent);
     if (!(isMobileResult.phone || isMobileResult.tablet)) {
       pcSetup();
@@ -64,6 +67,18 @@ function App({ Component, pageProps }: any) {
   };
 
   useEffect(() => {
+    const connectToPreviouslyEstablishedAccount = async () => {
+      const connection = await connect({
+        include: ["argentWebWallet"],
+        modalWalletAppearance: "email_only",
+        webWalletUrl: ARGENT_WEB_WALLET_URL,
+        modalMode: "neverAsk",
+      });
+      if (connection && connection.isConnected) {
+        wallet.passEstablishedConnection(connection);
+      }
+    };
+
     if (!navigator.serviceWorker.controller) {
       if ("serviceWorker" in navigator) {
         navigator.serviceWorker
@@ -81,6 +96,7 @@ function App({ Component, pageProps }: any) {
       });
       setup();
     }
+    connectToPreviouslyEstablishedAccount();
   }, []);
 
   return (

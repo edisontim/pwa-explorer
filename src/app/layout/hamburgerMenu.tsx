@@ -4,6 +4,7 @@ import React, { useContext } from "react";
 import { Menu, MenuItem } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
 import { WalletContext } from "../../pages/_app";
+import { ARGENT_WEB_WALLET_URL } from "../starknet/constants";
 
 const HamburgerMenu = () => {
   const { wallet, useWallet } = useContext(WalletContext);
@@ -45,7 +46,11 @@ const HamburgerMenu = () => {
           style={{ fontSize: 35, textAlign: "center" }}
           onClick={(e) => handleClose(e, "wallet")}
         >
-          <a style={{ textDecoration: "none" }} href="/wallet" target="_blank">
+          <a
+            style={{ textDecoration: "none" }}
+            href={ARGENT_WEB_WALLET_URL}
+            target="_blank"
+          >
             💳
           </a>
         </MenuItem>
