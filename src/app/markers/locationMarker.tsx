@@ -34,7 +34,8 @@ export const LocationMarker = ({
     if (newOwner === BigInt(0)) {
       hashedOwner = "0x0";
     } else {
-      hashedOwner = "0x" + new BigNumber(newOwner).toString(16);
+      hashedOwner =
+        "0x" + new BigNumber(newOwner.toLocaleString()).toString(16);
       hashedOwner = hashedOwner.slice(0, 5) + "..." + hashedOwner.slice(62);
     }
     setOwner(hashedOwner);
@@ -69,11 +70,12 @@ export const LocationMarker = ({
   ) => {
     const locationHash = getHashFromCoords(lat, lng);
     setAnchorEl(event.currentTarget);
-    let hash = "0x0";
+    let hash;
     if (!owner) {
       try {
         hash = await wallet.getOwnerOfLocation(locationHash);
       } catch (error) {
+        hash = "0x0";
         setAlert({
           msg: `Unexpected error happened ${error}`,
           severity: "warning",

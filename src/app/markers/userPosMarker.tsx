@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 
-export const UserPosMarker = () => {
+export const UserPosMarker = ({ lat, lng }: any) => {
   const [animation, setAnimation] = useState(0);
   return (
     <>
