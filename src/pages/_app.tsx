@@ -54,9 +54,16 @@ function App({ Component, pageProps }: any) {
     if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
       return;
     }
+    window.addEventListener("beforeinstallprompt", (event) => {
+      event.preventDefault();
+      setDialog(
+        <AndroidInstallDialog deferredPrompt={event} setDialog={setDialog} />
+      );
+    });
+
     const isMobileResult: isMobileResult = isMobile(window.navigator.userAgent);
     if (!(isMobileResult.phone || isMobileResult.tablet)) {
-      pcSetup();
+    //   pcSetup();
     } else {
       phoneTabletSetup(isMobileResult);
     }
@@ -82,12 +89,6 @@ function App({ Component, pageProps }: any) {
     }
     // Once the window has initialized
     if (typeof window !== "undefined") {
-      window.addEventListener("beforeinstallprompt", (event) => {
-        event.preventDefault();
-        setDialog(
-          <AndroidInstallDialog deferredPrompt={event} setDialog={setDialog} />
-        );
-      });
       setup();
     }
     connectToPreviouslyEstablishedAccount();

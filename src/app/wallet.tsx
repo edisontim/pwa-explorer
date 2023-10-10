@@ -24,9 +24,9 @@ export default class Wallet {
   public async connect(updateState: any) {
     const connection = await connect({
       include: ["argentWebWallet"],
-      modalWalletAppearance: "email_only",
       webWalletUrl: ARGENT_WEB_WALLET_URL,
-      modalMode: "canAsk",
+      modalMode: "alwaysAsk",
+      enableArgentMobile: true,
     });
     this.connection = connection;
     updateState({});
