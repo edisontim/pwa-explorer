@@ -1,7 +1,4 @@
-import { useState, useEffect } from "react";
-
-export const UserPosMarker = ({ lat, lng }: any) => {
-  const [animation, setAnimation] = useState(0);
+export const UserPosMarker = () => {
   return (
     <>
       <div className="pulsating-circle"></div>

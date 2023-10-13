@@ -5,7 +5,8 @@
   transform: translateX(-50%) translateY(-50%);
   width: 30px;
   height: 30px;
-  
+  z-index: 1;
+
   &:before {
     content: '';
     position: relative;
@@ -18,6 +19,7 @@
     border-radius: 50%;
     background-color: #01a4e930;
     animation: pulse-ring 2s cubic-bezier(0.215, 0.61, 0.355, 1) infinite;
+	z-index: 1;
   }
   
   &:after {
@@ -30,14 +32,17 @@
     height: 100%;
     border-radius: 50%;
     animation: pulse-dot 1.25s cubic-bezier(0.455, 0.03, 0.515, 0.955) -.4s infinite;
+	z-index: 1;
   }
 }
 
 @keyframes pulse-ring {
   0% {
+	z-index: 1;
     transform: scale(.33);
   }
   80%, 100% {
+	z-index: 1;
     opacity: 0;
   }
 }

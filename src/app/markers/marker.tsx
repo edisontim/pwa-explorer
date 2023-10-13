@@ -1,15 +1,10 @@
 import React from "react";
 import styled from "styled-components";
+import PlaceIcon from "@mui/icons-material/Place";
 
 const MarkerWrapper = styled.div`
   position: absolute;
-  top: 50%;
-  left: 50%;
-  width: 12px;
-  height: 12px;
-  background-color: #000;
-  border: 2px solid #fff;
-  border-radius: 100%;
+  display: flex;
   user-select: none;
   transform: translate(-50%, -50%);
   z-index: 2;
@@ -19,4 +14,28 @@ const MarkerWrapper = styled.div`
   }
 `;
 
-export const Marker = ({ onClick }: any) => <MarkerWrapper onClick={onClick} />;
+export const Marker = ({ onClick, logo }: any) => (
+  <MarkerWrapper onClick={onClick}>
+    <PlaceIcon
+      style={{
+        position: "relative",
+        width: "40px",
+        height: "40px",
+        color: "#0c0d4e",
+      }}
+    />
+    {logo !== "" && (
+      <img
+        src={logo}
+        width="15px"
+        height="15px"
+        style={{
+          position: "relative",
+          transform: "translate(-185%, 55%)",
+          zIndex: 4,
+          backgroundColor: "#0c0d4e",
+        }}
+      />
+    )}
+  </MarkerWrapper>
+);

@@ -15,7 +15,7 @@ import { AndroidInstallDialog } from "@/app/layout/androidDialogs";
 import { ARGENT_WEB_WALLET_URL } from "@/app/starknet/constants";
 import { connect } from "@argent/get-starknet";
 
-import "../app/app.css";
+import "../app/styles/app.css";
 
 export const WalletContext = React.createContext<any>(null);
 export const DialogContext = React.createContext<any>(null);
@@ -54,19 +54,19 @@ function App({ Component, pageProps }: any) {
     if (!process.env.NODE_ENV || process.env.NODE_ENV === "development") {
       return;
     }
+    const isMobileResult: isMobileResult = isMobile(window.navigator.userAgent);
+    if (!(isMobileResult.phone || isMobileResult.tablet)) {
+      //   pcSetup();
+      return;
+    } else {
+      phoneTabletSetup(isMobileResult);
+    }
     window.addEventListener("beforeinstallprompt", (event) => {
       event.preventDefault();
       setDialog(
         <AndroidInstallDialog deferredPrompt={event} setDialog={setDialog} />
       );
     });
-
-    const isMobileResult: isMobileResult = isMobile(window.navigator.userAgent);
-    if (!(isMobileResult.phone || isMobileResult.tablet)) {
-    //   pcSetup();
-    } else {
-      phoneTabletSetup(isMobileResult);
-    }
   };
 
   useEffect(() => {

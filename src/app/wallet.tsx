@@ -18,7 +18,7 @@ export default class Wallet {
   }
 
   public passEstablishedConnection = (connection: StarknetWindowObject) => {
-    this.connection = connection;
+    this.connection = connection; 
   };
 
   public async connect(updateState: any) {

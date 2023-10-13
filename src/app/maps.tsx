@@ -4,16 +4,18 @@ import GoogleMapReact, { MapOptions } from "google-map-react";
 import { UserPosMarker } from "./markers/userPosMarker";
 import { AlertContext } from "../pages/_app";
 import { LocationMarker } from "./markers/locationMarker";
-import { cosineDistanceBetweenPoints } from "./geoPosUtils";
-
+import { cosineDistanceBetweenPoints } from "./geopos/geoPosUtils";
+import { OSM_TAGS_VALUES } from "./geopos/constants";
 const { extractWithQuery } = require("osm-extractor");
+
+const ZOOM_VALUE = 17;
 
 const defaultProps = {
   center: {
     lat: 10.99835602,
     lng: 77.01502627,
   },
-  zoom: 17,
+  zoom: ZOOM_VALUE,
 };
 
 export type Position = {
@@ -26,6 +28,9 @@ const mapOptions: MapOptions = {
   clickableIcons: false,
   disableDefaultUI: true,
   disableDoubleClickZoom: true,
+  keyboardShortcuts: false,
+  minZoom: ZOOM_VALUE,
+  maxZoom: ZOOM_VALUE,
 };
 
 const Maps = () => {
@@ -90,6 +95,7 @@ const Maps = () => {
       const response = await extractWithQuery(query, { responseType: "json" });
       return response.elements;
     } catch (error) {
+      console.log(error);
       return [];
     }
   };
@@ -101,17 +107,39 @@ const Maps = () => {
     }
     const { ne, _se, sw, _nw } = await map.marginBounds;
     const bounds = [sw.lat, sw.lng, ne.lat, ne.lng];
-    let pois: any = await fetchOsmPoiForZone(bounds);
+    let pois: Array<any> = await fetchOsmPoiForZone(bounds);
     pois = pois.filter((poi: any) => {
       let keys = Object.keys(poi.tags);
-      return !keys.includes("amenity");
+      return (
+        !keys.includes("amenity") ||
+        poi.tags["amenity"] === "cinema" ||
+        poi.tags["amenity"] === "nightclub" ||
+        poi.tags["amenity"] === "playground" ||
+        poi.tags["amenity"] === "post office" ||
+        poi.tags["amenity"] === "recycling" ||
+        poi.tags["amenity"] === "telephone" ||
+        poi.tags["amenity"] === "toilets"
+      );
     });
+    console.log(pois);
     // console.log(JSON.stringify(pois, null, 2));
-    const markers = pois.map((poi: any) => ({
-      lat: poi.lat,
-      lng: poi.lon,
-      title: poi.tags["name"],
-    }));
+    const markers = pois.map((poi: any) => {
+      let path: string = "";
+      Object.keys(poi.tags).some((tagKey) => {
+        const tagCopy = poi.tags[tagKey].replace(/[-, ,_]/g, "").toLowerCase();
+        if (OSM_TAGS_VALUES.includes(tagCopy)) {
+          path = `/osm-logos/${tagCopy}.svg`;
+          return true;
+        }
+      });
+      return {
+        lat: poi.lat,
+        lng: poi.lon,
+        title: poi.tags["name"],
+        logo: path,
+        description: poi.tags["description"],
+      };
+    });
     setPois(markers);
   };
 
@@ -122,6 +150,7 @@ const Maps = () => {
         bootstrapURLKeys={{
           key: process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY as string,
         }}
+        shouldUnregisterMapOnUnmount={false}
         center={mapCenter.center}
         defaultZoom={mapCenter.zoom}
         onGoogleApiLoaded={({ map, maps }) => onMapLoaded(map, maps)}
@@ -135,6 +164,7 @@ const Maps = () => {
             text={poi.title}
             lat={poi.lat}
             lng={poi.lng}
+            logo={poi.logo}
             setAlert={setAlert}
           />
         ))}

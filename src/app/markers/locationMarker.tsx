@@ -1,33 +1,39 @@
-import { useContext, useState } from "react";
-import { Button, Menu, Collapse, Typography } from "@mui/material";
+import { useContext, useState, useEffect } from "react";
+import { Button, Slide, Typography, Card } from "@mui/material";
 import { Marker } from "./marker";
 import { snProvider } from "../starknet/constants";
 import { AlertArgs } from "../layout/alert";
-import { getHashFromCoords, cosineDistanceBetweenPoints } from "../geoPosUtils";
+import {
+  getHashFromCoords,
+  cosineDistanceBetweenPoints,
+} from "../geopos/geoPosUtils";
 import { WalletContext } from "../../pages/_app";
 import { Position } from "../maps";
 import BigNumber from "bignumber.js";
+import { ClickAwayListener } from "@mui/base/ClickAwayListener";
+import Draggable from "react-draggable";
 
 type locationMarkerProps = {
   lat: number;
   lng: number;
   userPos: Position;
   text: string;
+  logo: string;
   setAlert: (alert: AlertArgs) => void;
 };
 
 export const LocationMarker = ({
   lat,
   lng,
+  logo,
   userPos,
   text,
   setAlert,
 }: locationMarkerProps) => {
   const { wallet, _setWallet } = useContext(WalletContext);
   const [_state, updateState] = useState({});
-  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const [owner, setOwner]: any = useState();
-  const open = Boolean(anchorEl);
+  const [open, setOpen] = useState(false);
 
   const setNewOwner = (newOwner: BigInt) => {
     let hashedOwner: string;
@@ -59,7 +65,6 @@ export const LocationMarker = ({
         msg: "Something went wrong",
         severity: "error",
       });
-      handleClose(null, null);
       console.log(error);
     }
   };
@@ -67,8 +72,9 @@ export const LocationMarker = ({
   const handleMarkerClick = async (
     event: React.MouseEvent<HTMLButtonElement>
   ) => {
+    event.stopPropagation();
     const locationHash = getHashFromCoords(lat, lng);
-    setAnchorEl(event.currentTarget);
+    setOpen(true);
     if (!owner) {
       try {
         const hash: BigInt = await wallet.getOwnerOfLocation(locationHash);
@@ -80,10 +86,6 @@ export const LocationMarker = ({
         });
       }
     }
-  };
-
-  const handleClose = (e: any, target: any) => {
-    setAnchorEl(null);
   };
 
   const getButton = (): any => {
@@ -104,7 +106,7 @@ export const LocationMarker = ({
     ) {
       return (
         <Button disabled={true} onClick={handleMintIt}>
-          Get closer to mint
+          Get closer
         </Button>
       );
     }
@@ -116,32 +118,56 @@ export const LocationMarker = ({
 
   return (
     <>
-      <Marker onClick={handleMarkerClick} text={text} />
-      <Collapse in={open}>
-        <Menu anchorEl={anchorEl} open={open} onClose={handleClose}>
+      <Marker logo={logo} onClick={handleMarkerClick} text={text} />
+      <ClickAwayListener onClickAway={() => setOpen(false)}>
+        <Draggable axis="y">
           <div
             style={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
+              position: "fixed",
+              left: "-48vw",
+              bottom: "-50vh",
+              zIndex: 100,
             }}
           >
-            <Typography
-              variant="h5"
-              style={{ textAlign: "center", padding: 10 }}
+            <Slide
+              direction="up"
+              in={open}
+              timeout={300}
+              mountOnEnter
+              unmountOnExit
             >
-              {text}
-            </Typography>
-            <Typography
-              variant="body1"
-              style={{ textAlign: "center", padding: 10 }}
-            >
-              Owner: {owner}
-            </Typography>
-            {getButton()}
+              <Card
+                style={{
+                  zIndex: 100,
+                  display: "flex",
+                  flexDirection: "column",
+                  alignItems: "center",
+                  width: "96vw",
+                  height: "50vh",
+                  borderRadius: "20px",
+                }}
+                elevation={3}
+              >
+                <Typography
+                  variant="h5"
+                  style={{ textAlign: "center", padding: 10 }}
+                >
+                  {text}
+                </Typography>
+                <Typography
+                  variant="body1"
+                  style={{ textAlign: "center", padding: 10 }}
+                >
+                  {owner === "0x0" || !owner
+                    ? "Available"
+                    : "Belongs to " + owner}
+                </Typography>
+                {getButton()}
+              </Card>
+            </Slide>
           </div>
-        </Menu>
-      </Collapse>
+        </Draggable>
+      </ClickAwayListener>
     </>
   );
 };
