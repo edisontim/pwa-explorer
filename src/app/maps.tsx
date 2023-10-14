@@ -121,7 +121,6 @@ const Maps = () => {
         poi.tags["amenity"] === "toilets"
       );
     });
-    console.log(pois);
     // console.log(JSON.stringify(pois, null, 2));
     const markers = pois.map((poi: any) => {
       let path: string = "";
@@ -161,11 +160,12 @@ const Maps = () => {
           <LocationMarker
             userPos={mapCenter.center}
             key={index}
-            text={poi.title}
+            locationName={poi.title}
             lat={poi.lat}
             lng={poi.lng}
             logo={poi.logo}
             setAlert={setAlert}
+            description={poi.description}
           />
         ))}
         <UserPosMarker

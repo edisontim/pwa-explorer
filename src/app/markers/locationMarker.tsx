@@ -11,14 +11,16 @@ import { WalletContext } from "../../pages/_app";
 import { Position } from "../maps";
 import BigNumber from "bignumber.js";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
-import Draggable from "react-draggable";
+import Draggable, { DraggableEventHandler } from "react-draggable";
+import LocationCard from "../locationCard";
 
 type locationMarkerProps = {
   lat: number;
   lng: number;
   userPos: Position;
-  text: string;
+  locationName: string;
   logo: string;
+  description: string;
   setAlert: (alert: AlertArgs) => void;
 };
 
@@ -27,7 +29,8 @@ export const LocationMarker = ({
   lng,
   logo,
   userPos,
-  text,
+  locationName,
+  description,
   setAlert,
 }: locationMarkerProps) => {
   const { wallet, _setWallet } = useContext(WalletContext);
@@ -74,7 +77,7 @@ export const LocationMarker = ({
   ) => {
     event.stopPropagation();
     const locationHash = getHashFromCoords(lat, lng);
-    setOpen(true);
+    setOpen(!open);
     if (!owner) {
       try {
         const hash: BigInt = await wallet.getOwnerOfLocation(locationHash);
@@ -92,6 +95,7 @@ export const LocationMarker = ({
     if (!(wallet.connection && wallet.connection?.isConnected)) {
       return (
         <Button
+          variant="contained"
           onClick={async () => {
             await wallet.connect(updateState);
           }}
@@ -105,68 +109,61 @@ export const LocationMarker = ({
       cosineDistanceBetweenPoints(userPos.lat, userPos.lng, lat, lng) > 20
     ) {
       return (
-        <Button disabled={true} onClick={handleMintIt}>
+        <Button variant="contained" disabled={true} onClick={handleMintIt}>
           Get closer
         </Button>
       );
     }
     if (owner === "0x0") {
-      return <Button onClick={handleMintIt}>Mint it!</Button>;
+      return (
+        <Button variant="contained" onClick={handleMintIt}>
+          Mint it!
+        </Button>
+      );
     }
     return "";
   };
 
   return (
     <>
-      <Marker logo={logo} onClick={handleMarkerClick} text={text} />
+      <Marker
+        logo={logo}
+        onClick={handleMarkerClick}
+        locationName={locationName}
+      />
       <ClickAwayListener onClickAway={() => setOpen(false)}>
-        <Draggable axis="y">
-          <div
-            style={{
-              position: "fixed",
-              left: "-48vw",
-              bottom: "-50vh",
-              zIndex: 100,
+        {/* <Draggable axis="y" onStop={handleDragStop} position={winPos}> */}
+        <div
+          style={{
+            zIndex: 3,
+            position: "fixed",
+            left: "-48vw",
+            bottom: "-50vh",
+          }}
+        >
+          <Slide
+            direction="up"
+            in={open}
+            timeout={400}
+            mountOnEnter
+            unmountOnExit
+            onClick={(e) => {
+              e.stopPropagation();
             }}
           >
-            <Slide
-              direction="up"
-              in={open}
-              timeout={300}
-              mountOnEnter
-              unmountOnExit
-            >
-              <Card
-                style={{
-                  zIndex: 100,
-                  display: "flex",
-                  flexDirection: "column",
-                  alignItems: "center",
-                  width: "96vw",
-                  height: "50vh",
-                  borderRadius: "20px",
-                }}
-                elevation={3}
-              >
-                <Typography
-                  variant="h5"
-                  style={{ textAlign: "center", padding: 10 }}
-                >
-                  {text}
-                </Typography>
-                <Typography
-                  variant="body1"
-                  style={{ textAlign: "center", padding: 10 }}
-                >
-                  {owner === "0x0" || !owner
-                    ? "Available"
-                    : "Belongs to " + owner}
-                </Typography>
-                {getButton()}
-              </Card>
-            </Slide>
-          </div>
-        </Draggable>
+            {/* div necessary for the slide animation to not complain */}
+            <div>
+              <LocationCard
+                locationName={locationName}
+                owner={owner}
+                getButton={getButton}
+                logo={logo}
+                description={description}
+              />
+            </div>
+          </Slide>
+        </div>
+        {/* </Draggable> */}
       </ClickAwayListener>
     </>
   );

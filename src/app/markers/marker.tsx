@@ -8,7 +8,7 @@ const MarkerWrapper = styled.div`
   user-select: none;
   transform: translate(-50%, -50%);
   z-index: 2;
-  cursor: ${(props) => (props.onClick ? "pointer" : "default")};
+  cursor: ${(props: any) => (props.onClick ? "pointer" : "default")};
   &:hover {
     z-index: 2;
   }

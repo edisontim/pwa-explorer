@@ -29,7 +29,7 @@ const HamburgerMenu = () => {
         position: "fixed",
         bottom: "35px",
         left: "24px",
-        zIndex: 2,
+        zIndex: 1,
       }}
     >
       <MenuIcon

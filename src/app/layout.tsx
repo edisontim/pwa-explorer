@@ -8,11 +8,11 @@ const Layout = ({ children }: any) => {
   const { dialog, setDialog } = useContext(DialogContext);
 
   return (
-    <div>
-      <HamburgerMenu />
+    <div style={{ position: "relative" }}>
       <TransitionAlerts />
       {dialog}
       {children}
+      <HamburgerMenu />
     </div>
   );
 };
