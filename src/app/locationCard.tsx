@@ -16,12 +16,16 @@ const LocationCard = ({
   logo,
   description,
 }: LocationCardProps) => {
+  if (locationName.length >= 21) {
+    locationName = locationName.slice(0, 18) + "...";
+  }
   const getHousePrices = () => {
     let prices = [];
     const margins = "25px";
     for (let i = 0; i < 4; i++) {
       prices.push(
         <div
+          key={i}
           style={{
             display: "flex",
             marginLeft: margins,
@@ -59,9 +63,8 @@ const LocationCard = ({
         alignItems: "center",
         width: "96vw",
         margin: "auto",
-        height: "40vh",
+        height: "45vh",
         position: "relative",
-        zIndex: 3,
       }}
       onClick={(e) => {
         e.stopPropagation();
@@ -123,14 +126,27 @@ const LocationCard = ({
         >
           Rent $???
         </Typography>
-        <div>{getHousePrices()}</div>
-        {/* <Typography variant="body1">
+        <div style={{ marginBottom: "10px" }}>{getHousePrices()}</div>
+        <Typography
+          style={{ textAlign: "center", marginBottom: "10px" }}
+          variant="body1"
+        >
+          With HOTEL $???
+        </Typography>
+        <Typography
+          style={{ textAlign: "center", marginBottom: "10px" }}
+          variant="body1"
+        >
           {owner === "0x0" || !owner ? "Available" : "Belongs to " + owner}
         </Typography>
 
-        {description && <Typography variant="body1">{description}</Typography>} */}
+        {description && (
+          <Typography style={{ marginBottom: "10px" }} variant="body1">
+            {description}
+          </Typography>
+        )}
+        {getButton()}
       </div>
-      {/* {getButton()} */}
     </Card>
   );
 };

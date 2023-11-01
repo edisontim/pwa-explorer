@@ -7,7 +7,14 @@ export default function Document() {
         <link rel="manifest" href="/manifest.json" />
         <meta name="theme-color" content="#fff" />
       </Head>
-      <body style={{ margin: "0px", overflow: "hidden" }}>
+      <body
+        style={{
+          margin: "0px",
+          overflow: "hidden",
+          position: "relative",
+          zIndex: 1,
+        }}
+      >
         <Main />
         <NextScript />
       </body>

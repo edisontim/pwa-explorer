@@ -3,23 +3,42 @@
 import React, { useContext } from "react";
 import { Menu, MenuItem } from "@mui/material";
 import MenuIcon from "@mui/icons-material/Menu";
-import { WalletContext } from "../../pages/_app";
 import { ARGENT_WEB_WALLET_URL } from "../starknet/constants";
+import { DialogContext } from "@/pages/_app";
+import { StarknetContext } from "@/pages/_app";
+import { snConnect } from "../starknet/utils";
+import { AlertContext } from "@/pages/_app";
 
 const HamburgerMenu = () => {
-  const { wallet, useWallet } = useContext(WalletContext);
+  const { erc721Contract, snConnection, setSnConnection } =
+    useContext(StarknetContext);
+  const { setAlert } = useContext(AlertContext);
   const [anchorEl, setAnchorEl] = React.useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
+
   const handleClick = (event: any) => {
     setAnchorEl(event.currentTarget);
   };
 
-  const handleClose = (e: any, buttonClicked: string) => {
+  const handleClose = async (
+    e: React.SyntheticEvent,
+    buttonClicked: string
+  ) => {
     setAnchorEl(null);
-    console.log("hey");
-    if (!wallet.connection && buttonClicked === "wallet") {
-      e.preventDefault();
-      wallet.connect(() => {});
+    e.preventDefault();
+    if (buttonClicked === "backdropClick") {
+      return;
+    }
+    if (
+      !snConnection ||
+      (!snConnection.isConnected() && buttonClicked === "wallet")
+    ) {
+      try {
+        setSnConnection(await snConnect());
+      } catch (error) {
+        setAlert({ msg: error, severity: "error" });
+        console.log(error);
+      }
     }
   };
 

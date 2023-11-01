@@ -1,18 +1,22 @@
-import { useContext, useState, useEffect } from "react";
-import { Button, Slide, Typography, Card } from "@mui/material";
+import { useState, useContext, useEffect } from "react";
+import { Button, Slide } from "@mui/material";
 import { Marker } from "./marker";
 import { snProvider } from "../starknet/constants";
 import { AlertArgs } from "../layout/alert";
 import {
   getHashFromCoords,
   cosineDistanceBetweenPoints,
-} from "../geopos/geoPosUtils";
-import { WalletContext } from "../../pages/_app";
+} from "../geopos/utils";
 import { Position } from "../maps";
 import BigNumber from "bignumber.js";
 import { ClickAwayListener } from "@mui/base/ClickAwayListener";
-import Draggable, { DraggableEventHandler } from "react-draggable";
+// import Draggable, { DraggableEventHandler } from "react-draggable";
 import LocationCard from "../locationCard";
+import { getOwnerOfLocation, mint } from "../starknet/utils";
+import { AccountInterface } from "starknet";
+import { StarknetContext } from "@/pages/_app";
+import { snConnect } from "../starknet/utils";
+import { createPortal } from "react-dom";
 
 type locationMarkerProps = {
   lat: number;
@@ -33,10 +37,11 @@ export const LocationMarker = ({
   description,
   setAlert,
 }: locationMarkerProps) => {
-  const { wallet, _setWallet } = useContext(WalletContext);
   const [_state, updateState] = useState({});
   const [owner, setOwner]: any = useState();
   const [open, setOpen] = useState(false);
+  const { erc721Contract, snConnection, setSnConnection } =
+    useContext(StarknetContext);
 
   const setNewOwner = (newOwner: BigInt) => {
     let hashedOwner: string;
@@ -51,18 +56,23 @@ export const LocationMarker = ({
 
   const handleMintIt = async () => {
     const locationHash = getHashFromCoords(lat, lng);
-    if (wallet === null) {
-      setAlert({ msg: "wallet was null", severity: "error" });
-      console.log("Wallet shouldn't be null");
+    if (!snConnection.isConnected) {
+      setAlert({
+        msg: "You should be connected to do this",
+        severity: "error",
+      });
+      console.log("User isn't connected");
       return;
     }
 
     try {
-      console.log(wallet);
-      const res = await wallet.mint(locationHash);
+      const res = await mint(
+        snConnection.account() as AccountInterface,
+        locationHash
+      );
       console.log(res);
       const ret = await snProvider.waitForTransaction(res.transaction_hash);
-      setNewOwner(BigInt(wallet.connection?.account.address));
+      setNewOwner(BigInt(snConnection.selectedAddress() as string));
     } catch (error) {
       setAlert({
         msg: "Something went wrong",
@@ -80,7 +90,10 @@ export const LocationMarker = ({
     setOpen(!open);
     if (!owner) {
       try {
-        const hash: BigInt = await wallet.getOwnerOfLocation(locationHash);
+        const hash: BigInt = await getOwnerOfLocation(
+          erc721Contract,
+          locationHash
+        );
         setNewOwner(hash);
       } catch (error) {
         setAlert({
@@ -92,12 +105,12 @@ export const LocationMarker = ({
   };
 
   const getButton = (): any => {
-    if (!(wallet.connection && wallet.connection?.isConnected)) {
+    if (!snConnection || !snConnection.isConnected) {
       return (
         <Button
           variant="contained"
           onClick={async () => {
-            await wallet.connect(updateState);
+            setSnConnection(await snConnect());
           }}
         >
           Connect wallet
@@ -121,6 +134,13 @@ export const LocationMarker = ({
         </Button>
       );
     }
+    if (owner !== "0x0") {
+      return (
+        <Button variant="contained" disabled={true} onClick={handleMintIt}>
+          Already owned
+        </Button>
+      );
+    }
     return "";
   };
 
@@ -131,40 +151,42 @@ export const LocationMarker = ({
         onClick={handleMarkerClick}
         locationName={locationName}
       />
-      <ClickAwayListener onClickAway={() => setOpen(false)}>
-        {/* <Draggable axis="y" onStop={handleDragStop} position={winPos}> */}
-        <div
-          style={{
-            zIndex: 3,
-            position: "fixed",
-            left: "-48vw",
-            bottom: "-50vh",
-          }}
-        >
-          <Slide
-            direction="up"
-            in={open}
-            timeout={400}
-            mountOnEnter
-            unmountOnExit
-            onClick={(e) => {
-              e.stopPropagation();
+      {createPortal(
+        <ClickAwayListener onClickAway={() => setOpen(false)}>
+          {/* <Draggable axis="y" onStop={handleDragStop} position={winPos}> */}
+          <div
+            style={{
+              position: "relative",
+              top: "-45vh",
+              zIndex: 4,
             }}
           >
-            {/* div necessary for the slide animation to not complain */}
-            <div>
-              <LocationCard
-                locationName={locationName}
-                owner={owner}
-                getButton={getButton}
-                logo={logo}
-                description={description}
-              />
-            </div>
-          </Slide>
-        </div>
-        {/* </Draggable> */}
-      </ClickAwayListener>
+            <Slide
+              direction="up"
+              in={open}
+              timeout={400}
+              mountOnEnter
+              unmountOnExit
+              onClick={(e) => {
+                e.stopPropagation();
+              }}
+            >
+              {/* div necessary for the slide animation to not complain */}
+              <div>
+                <LocationCard
+                  locationName={locationName}
+                  owner={owner}
+                  getButton={getButton}
+                  logo={logo}
+                  description={description}
+                />
+              </div>
+            </Slide>
+          </div>
+          {/* </Draggable> */}
+        </ClickAwayListener>,
+        document.body
+      )}
     </>
   );
 };

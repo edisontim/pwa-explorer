@@ -15,10 +15,6 @@ export default function AlertDialog({
 }: any) {
   const [open, setOpen] = React.useState(true);
 
-  const handleClickOpen = () => {
-    setOpen(true);
-  };
-
   const handleClose = (event: any) => {
     if (unclosable) {
       return;

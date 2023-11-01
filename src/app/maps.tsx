@@ -4,9 +4,10 @@ import GoogleMapReact, { MapOptions } from "google-map-react";
 import { UserPosMarker } from "./markers/userPosMarker";
 import { AlertContext } from "../pages/_app";
 import { LocationMarker } from "./markers/locationMarker";
-import { cosineDistanceBetweenPoints } from "./geopos/geoPosUtils";
+import { cosineDistanceBetweenPoints } from "./geopos/utils";
 import { OSM_TAGS_VALUES } from "./geopos/constants";
 const { extractWithQuery } = require("osm-extractor");
+import * as gMapsStyleRetro from "./styles/google-maps-style-retro.json";
 
 const ZOOM_VALUE = 17;
 
@@ -31,6 +32,7 @@ const mapOptions: MapOptions = {
   keyboardShortcuts: false,
   minZoom: ZOOM_VALUE,
   maxZoom: ZOOM_VALUE,
+  styles: gMapsStyleRetro,
 };
 
 const Maps = () => {
